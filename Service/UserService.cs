@@ -12,7 +12,7 @@ namespace HangfireJobProcessor.Service
     {
         private readonly List<User> _users;
         private readonly ILogger<UserService>? _logger;
-        private const string Salt = "fixed-salt-value"; // Consider moving to configuration in a real app
+        private const string Salt = "fixed-salt-value";
 
         /// <summary>
         /// Initializes the in-memory user list.

@@ -66,7 +66,7 @@ builder.Services.AddHangfire(configuration => configuration
 builder.Services.AddHangfireServer(options =>
 {
     options.WorkerCount = Environment.ProcessorCount * 2;
-    options.Queues = new[] { "default", "emails", "reports", "critical" };
+    options.Queues = new[] { "default", "emails", "reports" };
 });
 
 // Register your existing services

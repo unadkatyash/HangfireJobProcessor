@@ -44,7 +44,6 @@ namespace HangfireJobProcessor.Jobs
 
                 var reportData = await _reportService.GenerateReportAsync(request.ReportType, request.Parameters, request.OutputFormat);
 
-                // If email is specified, send the report via email
                 if (!string.IsNullOrEmpty(request.EmailTo))
                 {
                     var emailBody = $"Please find attached the {request.ReportType} report generated on {DateTime.UtcNow}.";

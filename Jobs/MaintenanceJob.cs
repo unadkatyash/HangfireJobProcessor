@@ -26,7 +26,7 @@
         public async Task CleanupLogs()
         {
             _logger.LogInformation("Starting log cleanup maintenance task");
-            await Task.Delay(1000); // Simulate cleanup work
+            await Task.Delay(1000);
             _logger.LogInformation("Log cleanup completed");
         }
 
@@ -37,7 +37,7 @@
         public async Task HealthCheck()
         {
             _logger.LogInformation("Performing health check");
-            await Task.Delay(100); // Simulate health check
+            await Task.Delay(100);
             _logger.LogInformation("Health check completed - System is healthy");
         }
 
