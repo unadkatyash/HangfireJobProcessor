@@ -6,17 +6,29 @@ using System.Text;
 
 namespace HangfireJobProcessor.Service
 {
+    /// <summary>
+    /// Service for generating and validating JSON Web Tokens (JWT).
+    /// </summary>
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<JwtService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtService"/> class.
+        /// </summary>
         public JwtService(IConfiguration configuration, ILogger<JwtService> logger)
         {
             _configuration = configuration;
             _logger = logger;
         }
 
+        /// <summary>
+        /// Generates a JWT for the specified user and roles.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="roles">The user roles.</param>
+        /// <returns>JWT as a string.</returns>
         public string GenerateToken(string username, string[] roles)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -29,13 +41,12 @@ namespace HangfireJobProcessor.Service
                 new Claim("username", username)
             };
 
-            // Add roles as claims
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            // Add specific Hangfire permission if user has Admin role
+            // Hangfire dashboard access permission for Admins
             if (roles.Contains("Admin"))
             {
                 claims.Add(new Claim("permission", "hangfire-dashboard"));
@@ -45,13 +56,19 @@ namespace HangfireJobProcessor.Service
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(8), // Token expires in 8 hours
+                expires: DateTime.UtcNow.AddHours(8),
                 signingCredentials: credentials
             );
 
+            _logger.LogInformation("JWT generated for user {Username} with roles: {Roles}", username, string.Join(", ", roles));
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        /// <summary>
+        /// Validates the provided JWT.
+        /// </summary>
+        /// <param name="token">JWT token string.</param>
+        /// <returns>True if valid, otherwise false.</returns>
         public bool ValidateToken(string token)
         {
             try
@@ -69,17 +86,22 @@ namespace HangfireJobProcessor.Service
                     ValidAudience = _configuration["Jwt:Audience"],
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
+                }, out _);
 
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Token validation failed: {Error}", ex.Message);
+                _logger.LogWarning("Token validation failed: {Message}", ex.Message);
                 return false;
             }
         }
 
+        /// <summary>
+        /// Extracts the ClaimsPrincipal from a JWT if valid.
+        /// </summary>
+        /// <param name="token">JWT token string.</param>
+        /// <returns>ClaimsPrincipal or empty if invalid.</returns>
         public ClaimsPrincipal GetPrincipalFromToken(string token)
         {
             try
@@ -97,14 +119,16 @@ namespace HangfireJobProcessor.Service
                     ValidAudience = _configuration["Jwt:Audience"],
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
+                }, out _);
 
                 return principal;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogWarning("Failed to extract claims from token: {Message}", ex.Message);
                 return new ClaimsPrincipal();
             }
         }
     }
 }
+

@@ -10,6 +10,8 @@ namespace HangfireJobProcessor.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
+        #region Services & Constructor
+
         private readonly IJwtService _jwtService;
         private readonly IUserService _userService;
         private readonly ILogger<AuthController> _logger;
@@ -21,6 +23,22 @@ namespace HangfireJobProcessor.Controllers
             _logger = logger;
         }
 
+        #endregion
+
+        #region Auth Summary
+
+        // This region can later include endpoints or logic for summarizing login activities
+        // such as: login attempts, active sessions, failed login counts, etc.
+
+        #endregion
+
+        #region Auth Endpoints
+
+        /// <summary>
+        /// Authenticates a user with the provided credentials and returns a JWT token.
+        /// </summary>
+        /// <param name="request">The login request containing username and password.</param>
+        /// <returns>Returns a JWT token if authentication is successful; otherwise, returns Unauthorized.</returns>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -66,6 +84,11 @@ namespace HangfireJobProcessor.Controllers
             }
         }
 
+        /// <summary>
+        /// Validates the provided JWT token.
+        /// </summary>
+        /// <param name="token">JWT token string to validate.</param>
+        /// <returns>Returns token validation result including username and roles if valid.</returns>
         [HttpPost("validate-token")]
         public IActionResult ValidateToken([FromBody] string token)
         {
@@ -98,6 +121,10 @@ namespace HangfireJobProcessor.Controllers
             }
         }
 
+        /// <summary>
+        /// Returns the authenticated user's profile information.
+        /// </summary>
+        /// <returns>Returns the username, roles, and permission to access Hangfire dashboard.</returns>
         [HttpGet("profile")]
         [Authorize]
         public IActionResult GetProfile()
@@ -112,5 +139,7 @@ namespace HangfireJobProcessor.Controllers
                 canAccessHangfire = User.HasClaim("permission", "hangfire-dashboard") || User.IsInRole("Admin")
             });
         }
+
+        #endregion
     }
 }

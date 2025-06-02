@@ -6,7 +6,7 @@ using HangfireJobProcessor.Models;
 namespace HangfireJobProcessor.Service
 {
     /// <summary>
-    /// 
+    /// Service responsible for queuing, scheduling, and managing Hangfire jobs.
     /// </summary>
     public class JobService : IJobService
     {
@@ -19,9 +19,9 @@ namespace HangfireJobProcessor.Service
         #region [ Constructor ]
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the <see cref="JobService"/> class.
         /// </summary>
-        /// <param name="logger"></param>
+        /// <param name="logger">Logger instance.</param>
         public JobService(ILogger<JobService> logger)
         {
             _logger = logger;
@@ -32,10 +32,10 @@ namespace HangfireJobProcessor.Service
         #region [ IJobService Methods ]
 
         /// <summary>
-        /// 
+        /// Enqueues an email job to be processed immediately.
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <param name="request">The email job request containing email details.</param>
+        /// <returns>The Hangfire job ID.</returns>
         public string EnqueueEmailJob(EmailJobRequest request)
         {
             var jobId = BackgroundJob.Enqueue<EmailJob>(job => job.ProcessEmailJob(request));
@@ -44,10 +44,10 @@ namespace HangfireJobProcessor.Service
         }
 
         /// <summary>
-        /// 
+        /// Enqueues a report generation job to be processed immediately.
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <param name="request">The report job request containing report parameters.</param>
+        /// <returns>The Hangfire job ID.</returns>
         public string EnqueueReportJob(ReportJobRequest request)
         {
             var jobId = BackgroundJob.Enqueue<ReportJob>(job => job.ProcessReportJob(request));
@@ -56,11 +56,11 @@ namespace HangfireJobProcessor.Service
         }
 
         /// <summary>
-        /// 
+        /// Schedules an email job to be processed at a future time.
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="scheduledAt"></param>
-        /// <returns></returns>
+        /// <param name="request">The email job request.</param>
+        /// <param name="scheduledAt">The scheduled time for job execution.</param>
+        /// <returns>The Hangfire job ID.</returns>
         public string ScheduleEmailJob(EmailJobRequest request, DateTime scheduledAt)
         {
             var jobId = BackgroundJob.Schedule<EmailJob>(job => job.ProcessEmailJob(request), scheduledAt);
@@ -69,11 +69,11 @@ namespace HangfireJobProcessor.Service
         }
 
         /// <summary>
-        /// 
+        /// Schedules a report job to be processed at a future time.
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="scheduledAt"></param>
-        /// <returns></returns>
+        /// <param name="request">The report job request.</param>
+        /// <param name="scheduledAt">The scheduled time for job execution.</param>
+        /// <returns>The Hangfire job ID.</returns>
         public string ScheduleReportJob(ReportJobRequest request, DateTime scheduledAt)
         {
             var jobId = BackgroundJob.Schedule<ReportJob>(job => job.ProcessReportJob(request), scheduledAt);
@@ -82,13 +82,23 @@ namespace HangfireJobProcessor.Service
         }
 
         /// <summary>
-        /// 
+        /// Configures recurring background jobs such as maintenance tasks.
         /// </summary>
         public void SetupRecurringJobs()
         {
-            // Setup recurring jobs
-            RecurringJob.AddOrUpdate<MaintenanceJob>("cleanup-logs", job => job.CleanupLogs(), Cron.Daily(2, 0));
-            RecurringJob.AddOrUpdate<MaintenanceJob>("health-check", job => job.HealthCheck(), Cron.Minutely());
+            _logger.LogInformation("Setting up recurring jobs...");
+
+            RecurringJob.AddOrUpdate<MaintenanceJob>(
+                "cleanup-logs",
+                job => job.CleanupLogs(),
+                Cron.Daily(2, 0));
+
+            RecurringJob.AddOrUpdate<MaintenanceJob>(
+                "health-check",
+                job => job.HealthCheck(),
+                Cron.Minutely());
+
+            _logger.LogInformation("Recurring jobs configured.");
         }
 
         #endregion

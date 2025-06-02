@@ -24,7 +24,6 @@ namespace HangfireJobProcessor.common
             // 2. Check JWT Bearer token
             string token = null;
 
-            // 1. Try reading from Authorization header
             var authHeader = httpContext.Request.Headers["Authorization"].FirstOrDefault();
             if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
             {
