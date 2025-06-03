@@ -46,9 +46,12 @@ namespace HangfireJobProcessor.Service
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(to))
+                    throw new ArgumentException("Recipient email (to) cannot be null or empty.");
+
                 _logger.LogInformation("Starting email send to {To} with subject {Subject}", to, subject);
 
-                await Task.Delay(2000); // Simulate sending delay
+                await Task.Delay(2000);
 
                 using var client = new SmtpClient(_configuration["Email:SmtpHost"], int.Parse(_configuration["Email:SmtpPort"]))
                 {
@@ -64,10 +67,13 @@ namespace HangfireJobProcessor.Service
                     IsBodyHtml = isHtml
                 };
 
-                message.To.Add(to);
+                message.To.Add(to.Trim());
 
-                cc?.ForEach(c => message.CC.Add(c));
-                bcc?.ForEach(b => message.Bcc.Add(b));
+                cc?.Where(email => !string.IsNullOrWhiteSpace(email)).ToList()
+                   .ForEach(email => message.CC.Add(email.Trim()));
+
+                bcc?.Where(email => !string.IsNullOrWhiteSpace(email)).ToList()
+                    .ForEach(email => message.Bcc.Add(email.Trim()));
 
                 await client.SendMailAsync(message);
 
