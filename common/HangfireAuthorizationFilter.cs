@@ -30,7 +30,6 @@ namespace HangfireJobProcessor.common
                 token = authHeader.Substring("Bearer ".Length).Trim();
             }
 
-            // 2. Fallback to cookie
             if (string.IsNullOrEmpty(token))
             {
                 token = httpContext.Request.Cookies["HangfireToken"];

@@ -2,10 +2,6 @@
 using System.Net;
 using System.Net.Mail;
 
-using System.Net;
-using System.Net.Mail;
-using HangfireJobProcessor.IService;
-
 namespace HangfireJobProcessor.Service
 {
     /// <summary>
